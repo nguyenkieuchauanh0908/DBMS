@@ -1,0 +1,6 @@
+USE [master]
+GO
+CREATE DATABASE [STATIONERYv4] ON 
+( FILENAME = N'C:\Program Files\Microsoft SQL Server\MSSQL15.SQLEXPRESS\MSSQL\Backup\pro.bak' )
+FOR ATTACH
+GO

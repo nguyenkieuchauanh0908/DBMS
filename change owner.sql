@@ -1,0 +1,1 @@
+use QUANLYTRUONGHOC EXEC sp_changedbowner 'sa'

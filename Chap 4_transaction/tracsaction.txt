@@ -1,0 +1,58 @@
+1. transaction là bất kì thao tác chương trình nào của người dùng trong hệ quản trị cơ sở dữ liệu. transaction là một chương trình thực thi bên trong cơ sở dữ liệu
+hệ quản trị cơ sở dữ liệu xử lí các transaction như là một chuỗi các lệnh đọc ghi trên cơ sở dữ liệu
+để đọc cơ sở dữ liệu đầu tiên hệ sẽ mang các dữ liệu vào trong các buffer pool và sau đó giá trị sẽ đc copy vào biến của chương trình
+để ghi đối tượng 1 bản copy sẽ được chỉnh sửa trước và sau đó được ghi lên đĩa.
+2.
+4 thuộc tính của transaction:
+atomicity (tính nguyên tử): toàn bộ các lệnh trong transaction được thực hiện hoặc không một lệnh nào được thực hiện cả
+consistency (tình nhất quán): các ràng buộc của cơ sở dữ liệu sẽ được du trì, đảm bảo tính chất này của transaction là tránh nhiệm của người dùng
+isolation (tính độc lập): một transaction khi được người dùng thực hiện thì nó thực hiện như chỉ có 1 transaction đc thực hiện tại một thời điểm thực tế thì có nhiều
+durability (tính bền vững): một transaction được thực hiện thành công thì kết quả của nó phải đc bảo đảm ngay cả khi gặp sự cố trước khi tất cả các sự thay đổi đó được ghi lên đĩa
+3. các trạng thái của một transaction
+active: là trạng thái khởi động là trạng thái ban đầu, transaction sẽ duy trì trạng thái này trong suốt quá trình hoạt động
+partially committed: sau khi lệnh của cuối cùng được thực hiện
+failed: sau khi sự phục hồi những thao tác không thể tiến hành ddoc nữa
+aborted: sau khi transaction được rollback được phục hồi đến trạng thái trc khi thực hiện transaction. có 2 lựa chọn sau khi aborted: transaction sẽ thực hiện lại nếu như không có lỗi logic xảy ra hoặc transaction sẽ bị hủy bỏ hoàn toàn
+committed: sau khi transaction được thực hiện hoàn toàn
+4. thao tác đồng thời và lịch biểu
+nhiều transaction được cho phép chạy đồng thời trong hệ thống. ưu điểm của việc này là: tận dụng được không gian đĩa (điều này dẫn tới thông lượng của transaction sẽ tốt hơn có nghĩa là một transaction có thể dùng CPU trong khi một thand ghi khác có thể đọc hoặc ghi trên ổ đĩa), giảm thời gian đáp ứng trung bình (nghĩa là các transaction ngắn sẽ không cần phải đợi các transaction dài hơn)
+Lược đồ kiểm soát đồng thời: để kiểm soát sự tương tác của transaction đồng thời để ngăn cản sự phá hủy tính nhất quán của cơ sở dữ liệu
+lịch biểu được định nghĩa là một chuỗi các lệnh trong các transaction khác nhau được thực hiện theo thứ tự thời gian
+một lịch biểu đối với 1 tập transaction phải bao gồm tất cả các lệnh trong các transaction
+tuy nhiên chúng ta phải duy trì thứ tự thực hiện trong mỗi transaction
+Các loại lịch biểu:
+lịch biểu tuần tự:  là lịch biểu mà nó sẽ thực hiện xong transaction này mới thực hiện đến transaction khác
+lịch biểu tương đương: 2 lịch biểu tương đương nếu bất kì trạng thái cơ sở dữ liệu nào thì kết quả của việc thao tác lịch biểu thứ nhất cũng sẽ giống như kết quả thao tác của lịch biểu thứ hai
+lịch biểu khả tuần tự: là lịch biểu tương đương với một lịch biểu tuần tự nào đó.
+mỗi transaction duy trì tính nhất quán thì mọi lịch biểu khả tuần tự cũng duy trì tính nhất quán.
+2 loại khả tuần tự
+khả tuần tự xung đột: xét 2 lệnh trong 2 transaction trong cùng một lịch biểu, 2 lệnh được gọi là xung đột nhau nếu và chỉ nếu 2 lệnh truy cập 1 đối tường và có ít nhất 1 lệnh ghi. Một cách trực quan 2 lệnh trong transaction nếu xung đột thì bắt buộc chúng ta phải duy trì thứ tự thực hiện của 2 lệnh đó trong lịch biểu, trong trường hợp nếu 2 lệnh trong 2 transaction mà ko xung đột thì chúng ta có thể hoán đổi thứ tự thực hiện. tương đương xung đột nếu lịch biểu S có thể biến đổi thành lịch biểu S' bằng cách đổi chỗ các lệch ko bị xung đột. Một lịch biểu S được gọi là khả tuần tự xung đột nếu nó tương đương xung đột với một lịch biểu tuần tự
+khả tuần tự view: một lịch biểu S gọi là khả tuần tự view nếu nó tương đương view với một lịch biểu tuần tự
+Mỗi lịch biểu khả tuần tự xung đột thì cũng khả tuần tự view nhưng ngược lại thì không đúng, mỗi lịch biểu khả tuần tự view mà không khả tuần tự xung đột thì sẽ ra hiện tượng ghi mù blind write, ghi mù có nghĩa là transaction thực hiện ghi đối tượng nhưng trước đó nó không đọc  
+tương đương view: cho 2 lịch biểu S và S' với cùng 1 tập các transaction giống nhau, S và S' tương đương view nếu thỏa 3 điều kiện: với mọi đối tượng Q, nếu transaction Ti đọc giá trị ban đầu của Q trong lịch biểu S, thì transaction Ti cũng phải đọc giá trị ban đầu của Q trong lịch biểu S', với mỗi đối tượng Q, nếu transaction Ti thực hiện đọc Q trong lịch biểu S mà giá trị này được ghi bởi Transaction Tj nếu có thì transaction Ti trong lịch biểu S' cũng phải đọc giá trị Q và giá trị Q cũng phải được ghi bởi transaction Tj trước đó, với mỗi đối tượng Q, nếu transaction nếu có thực hiện ghi giá trị Q cuối cùng nếu có trong lịch biểu S thì trong lịch biểu S' transaction đó cũng phải thực hiện ghi giá trị Q cuối cùng
+5.tính khả phục hồi: nhằm xử lí kết quả của những transaction thất bại trong khi chạy các transaction đồng thời
+lịch biểu khả phục hồi: nếu một transaction Tj đọc một đối tượng dữ liệu mà trc đó đối tượng này được ghi bởi transaction Ti thì thao tác commit của Ti phải xuất hiện trc commit của Tj
+phục hồi lan truyền: một transaction thất bại nó sẽ lan truyền qua các transaction khác trong lịch biểu
+lịch biểu không lan truyền: phục hồi lan truyền không xảy ra, với mỗi cặp Ti và Tj mà Tj đọc đối tượng dữ liệu trc đó được ghi bởi Ti thì lệnh commit của Ti phải xuất hiện trước lệnh đọc của Tj có nghĩa là transaction chỉ được phép đọc đối tượng dữ liệu của transaction đã thực hiện xong. mọi lịch biểu không lan truyền thì cũng khả phục hồi
+6. kiểm xoát việc thực thi đồng thời dựa trên lock: phương pháp được thực thi rộng rãi là phương pháp nghi thức kiểm soát 2 giai đoạn nghiêm ngặt (Strict Two-Phase lock), nghi thức có 2 luật:
+nếu transaction T muốn đọc hoặc ghi một đối tượng thì đầu tiên nó phải yêu cầu shared lock hoặc exclusive lock trên đối tượng đó thì nó nhận được các lock thì nó có quyền thao tác trên dữ liệu đó
+tất cả các lock được giữ vào transaction sẽ được giải phóng khi transaction đó hoàn tất.
+trong trường hợp mà sử dụng nghi thức Non-strict 2PL thì transaction có thể giải phóng lock bất cứ lúc nào, nhưng không thể yêu cầu lock sau khi nó được giải phóng nếu một việc phục hồi transaction sẽ được do bộ re của DBMS sẽ được
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
